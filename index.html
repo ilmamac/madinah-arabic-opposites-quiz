@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>لُعْبَةُ الْأَضْدَادِ</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,"Noto Naskh Arabic",sans-serif;
+    background:#f4f7fb;
+    color:#222;
+    text-align:center;
+}
+
+header{
+    background:#ffffff;
+    padding:16px 10px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+h1{
+    margin:0 0 12px;
+    font-size:28px;
+}
+
+.topbar{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+}
+
+#score{
+    background:#eef3ff;
+    padding:9px 18px;
+    border-radius:10px;
+    font-size:20px;
+    font-weight:bold;
+}
+
+#reset{
+    border:0;
+    background:#333;
+    color:#fff;
+    padding:9px 18px;
+    border-radius:10px;
+    font-size:17px;
+    cursor:pointer;
+}
+
+.game{
+    width:95%;
+    max-width:1000px;
+    margin:20px auto 35px;
+}
+
+.instructions{
+    font-size:21px;
+    font-weight:bold;
+    margin-bottom:18px;
+}
+
+.match-area{
+    background:#fff;
+    padding:16px;
+    border-radius:14px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+/* EACH QUESTION ROW */
+
+.row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    align-items:center;
+    margin-bottom:12px;
+    direction:rtl;
+}
+
+/* WORD ALREADY GIVEN */
+
+.source{
+    min-height:58px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px 14px;
+
+    font-size:clamp(22px,4vw,30px);
+    font-weight:bold;
+
+    background:#f7f7f7;
+    border:2px solid #777;
+
+    direction:rtl;
+}
+
+/* BLANK BLOCK */
+
+.drop-zone{
+    min-height:58px;
+    border-radius:12px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:8px 14px;
+
+    font-size:clamp(22px,4vw,30px);
+    font-weight:bold;
+
+    background:#fafcff;
+    border:3px dashed #4b8fe8;
+
+    direction:rtl;
+
+    transition:.15s;
+}
+
+/* CORRECT */
+
+.drop-zone.correct{
+    background:#e2f8e5;
+    border:2px solid #2e9d45;
+}
+
+/* WRONG */
+
+.drop-zone.wrong{
+    animation:wrongBlink .45s ease-in-out 3;
+}
+
+@keyframes wrongBlink{
+
+    0%,100%{
+        background:#fafcff;
+        border-color:#4b8fe8;
+    }
+
+    50%{
+        background:#ffdede;
+        border-color:red;
+    }
+}
+
+/* WHEN WORD IS OVER TARGET */
+
+.drop-zone.over{
+    background:#edf3ff;
+    border-color:#2e73d9;
+}
+
+/* OPPOSITE WORD BANK */
+
+.bank-title{
+    font-size:21px;
+    font-weight:bold;
+    margin:22px 0 10px;
+}
+
+.word-bank{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+    padding:8px;
+}
+
+.word{
+    background:#ffffff;
+
+    border:2px solid #555;
+    border-radius:10px;
+
+    padding:10px 16px;
+
+    font-size:clamp(20px,3.5vw,27px);
+    font-weight:bold;
+
+    direction:rtl;
+
+    cursor:grab;
+
+    touch-action:none;
+    user-select:none;
+    -webkit-user-select:none;
+
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+
+.word:active{
+    cursor:grabbing;
+    transform:scale(.98);
+}
+
+.word.used{
+    opacity:.35;
+    pointer-events:none;
+}
+
+/* FLOATING DRAG WORD */
+
+.drag-ghost{
+    position:fixed;
+    z-index:99999;
+
+    pointer-events:none;
+
+    background:#ffffff;
+
+    border:3px solid #333;
+    border-radius:10px;
+
+    padding:8px 16px;
+
+    font-size:24px;
+    font-weight:bold;
+
+    direction:rtl;
+
+    transform:translate(-50%,-50%);
+
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+}
+
+#message{
+    min-height:32px;
+    margin-top:15px;
+    font-size:19px;
+    font-weight:bold;
+}
+
+@media(max-width:650px){
+
+    .row{
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+    }
+
+    .source,
+    .drop-zone{
+        min-height:54px;
+        font-size:20px;
+    }
+
+    .instructions{
+        font-size:18px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<h1>🌸 لُعْبَةُ الْأَضْدَادِ 🌸</h1>
+
+<div class="topbar">
+
+<div id="score">
+النَّتِيجَةُ: ٠ / ١٢
+</div>
+
+<button id="reset" type="button">
+إِعَادَة
+</button>
+
+</div>
+
+</header>
+
+
+<div class="game">
+
+<div class="instructions">
+اِسْحَبِ الضِّدَّ الصَّحِيحَ إِلَى الْمَكَانِ الْفَارِغِ
+</div>
+
+
+<div class="match-area" id="matchArea">
+</div>
+
+
+<div class="bank-title">
+الْأَضْدَادُ
+</div>
+
+
+<div class="word-bank" id="wordBank">
+</div>
+
+
+<div id="message" aria-live="polite">
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   OPPOSITE PAIRS
+   ========================================= */
+
+const pairs = [
+
+    ["هَذَا","ذَلِكَ"],
+
+    ["ثَقِيلٌ","خَفِيفٌ"],
+
+    ["حَارٌّ","بَارِدٌ"],
+
+    ["قَرِيبٌ","بَعِيدٌ"],
+
+    ["جَدِيدٌ","قَدِيمٌ"],
+
+    ["صَغِيرٌ","كَبِيرٌ"],
+
+    ["طَوِيلٌ","قَصِيرٌ"],
+
+    ["غَنِيٌّ","فَقِيرٌ"],
+
+    ["مَرِيضٌ","سَلِيمٌ"],
+
+    ["وَسِخٌ","نَظِيفٌ"],
+
+    ["مَفْتُوحٌ","مُغْلَقٌ"],
+
+    ["جَالِسٌ","وَاقِفٌ"]
+
+];
+
+
+/* =========================================
+   ELEMENTS
+   ========================================= */
+
+const matchArea =
+    document.getElementById("matchArea");
+
+const wordBank =
+    document.getElementById("wordBank");
+
+const scoreBox =
+    document.getElementById("score");
+
+const message =
+    document.getElementById("message");
+
+const resetButton =
+    document.getElementById("reset");
+
+
+/* =========================================
+   GAME VARIABLES
+   ========================================= */
+
+let score = 0;
+
+let activeWord = null;
+
+let ghost = null;
+
+
+/* =========================================
+   ARABIC NORMALIZATION
+   ========================================= */
+
+function normalizeArabic(text){
+
+    return text
+        .replace(/[\u064B-\u065F\u0670]/g,"")
+        .replace(/ـ/g,"")
+        .trim();
+}
+
+
+/* =========================================
+   ARABIC DIGITS
+   ========================================= */
+
+function arabicDigits(number){
+
+    return String(number)
+        .replace(/0/g,"٠")
+        .replace(/1/g,"١")
+        .replace(/2/g,"٢")
+        .replace(/3/g,"٣")
+        .replace(/4/g,"٤")
+        .replace(/5/g,"٥")
+        .replace(/6/g,"٦")
+        .replace(/7/g,"٧")
+        .replace(/8/g,"٨")
+        .replace(/9/g,"٩");
+
+}
+
+
+/* =========================================
+   UPDATE SCORE
+   ========================================= */
+
+function updateScore(){
+
+    scoreBox.textContent =
+        "النَّتِيجَةُ: "
+        + arabicDigits(score)
+        + " / ١٢";
+
+}
+
+
+/* =========================================
+   SHUFFLE ARRAY
+   ========================================= */
+
+function shuffle(array){
+
+    return array
+        .map(value => ({
+            value:value,
+            sort:Math.random()
+        }))
+        .sort((a,b)=>a.sort-b.sort)
+        .map(item=>item.value);
+
+}
+
+
+/* =========================================
+   CREATE GAME
+   ========================================= */
+
+function createGame(){
+
+    matchArea.innerHTML = "";
+
+    wordBank.innerHTML = "";
+
+    score = 0;
+
+    updateScore();
+
+    message.textContent = "";
+
+
+    /* -------------------------------
+       CREATE BLANK TARGETS
+       ------------------------------- */
+
+    pairs.forEach((pair,index)=>{
+
+        const row =
+            document.createElement("div");
+
+        row.className = "row";
+
+
+        /* GIVEN WORD */
+
+        const source =
+            document.createElement("div");
+
+        source.className = "source";
+
+        source.textContent = pair[0];
+
+
+        /* BLANK OPPOSITE BOX */
+
+        const drop =
+            document.createElement("div");
+
+        drop.className = "drop-zone";
+
+        drop.dataset.answer = pair[1];
+
+        drop.dataset.index = index;
+
+        drop.textContent = "؟";
+
+
+        row.appendChild(source);
+
+        row.appendChild(drop);
+
+        matchArea.appendChild(row);
+
+    });
+
+
+    /* -------------------------------
+       SHUFFLE OPPOSITE WORDS
+       ------------------------------- */
+
+    const oppositeWords =
+        shuffle(
+            pairs.map(pair=>pair[1])
+        );
+
+
+    /* -------------------------------
+       CREATE WORD BLOCKS
+       ------------------------------- */
+
+    oppositeWords.forEach(wordText=>{
+
+        const word =
+            document.createElement("div");
+
+        word.className = "word";
+
+        word.dataset.word = wordText;
+
+        word.textContent = wordText;
+
+        wordBank.appendChild(word);
+
+    });
+
+
+    attachDragEvents();
+
+}
+
+
+/* =========================================
+   FIND TARGET
+   ========================================= */
+
+function findDropZone(x,y){
+
+    const zones =
+        document.querySelectorAll(
+            ".drop-zone:not(.correct)"
+        );
+
+    let nearest = null;
+
+    let bestDistance = Infinity;
+
+
+    zones.forEach(zone=>{
+
+        const rect =
+            zone.getBoundingClientRect();
+
+
+        /* Larger touch area for mobile */
+
+        const extra = 30;
+
+
+        if(
+
+            x >= rect.left - extra &&
+
+            x <= rect.right + extra &&
+
+            y >= rect.top - extra &&
+
+            y <= rect.bottom + extra
+
+        ){
+
+            const centerX =
+                (rect.left + rect.right) / 2;
+
+            const centerY =
+                (rect.top + rect.bottom) / 2;
+
+
+            const distance =
+                Math.hypot(
+                    x - centerX,
+                    y - centerY
+                );
+
+
+            if(distance < bestDistance){
+
+                bestDistance = distance;
+
+                nearest = zone;
+
+            }
+
+        }
+
+    });
+
+
+    return nearest;
+
+}
+
+
+/* =========================================
+   MOVE GHOST
+   ========================================= */
+
+function moveGhost(x,y){
+
+    if(!ghost){
+        return;
+    }
+
+    ghost.style.left =
+        x + "px";
+
+    ghost.style.top =
+        y + "px";
+
+}
+
+
+/* =========================================
+   START DRAG
+   ========================================= */
+
+function startDrag(e){
+
+    if(
+        e.button !== undefined &&
+        e.button !== 0
+    ){
+
+        return;
+
+    }
+
+
+    activeWord =
+        e.currentTarget;
+
+
+    ghost =
+        document.createElement("div");
+
+
+    ghost.className =
+        "drag-ghost";
+
+
+    ghost.textContent =
+        activeWord.dataset.word;
+
+
+    document.body.appendChild(ghost);
+
+
+    moveGhost(
+        e.clientX,
+        e.clientY
+    );
+
+
+    document.addEventListener(
+        "pointermove",
+        dragMove
+    );
+
+
+    document.addEventListener(
+        "pointerup",
+        endDrag
+    );
+
+
+    document.addEventListener(
+        "pointercancel",
+        endDrag
+    );
+
+
+    e.preventDefault();
+
+}
+
+
+/* =========================================
+   DRAG MOVEMENT
+   ========================================= */
+
+function dragMove(e){
+
+    moveGhost(
+        e.clientX,
+        e.clientY
+    );
+
+
+    document
+        .querySelectorAll(".drop-zone")
+        .forEach(zone=>{
+
+            zone.classList.remove("over");
+
+        });
+
+
+    const target =
+        findDropZone(
+            e.clientX,
+            e.clientY
+        );
+
+
+    if(target){
+
+        target.classList.add("over");
+
+    }
+
+
+    e.preventDefault();
+
+}
+
+
+/* =========================================
+   END DRAG
+   ========================================= */
+
+function endDrag(e){
+
+    document.removeEventListener(
+        "pointermove",
+        dragMove
+    );
+
+
+    document.removeEventListener(
+        "pointerup",
+        endDrag
+    );
+
+
+    document.removeEventListener(
+        "pointercancel",
+        endDrag
+    );
+
+
+    document
+        .querySelectorAll(".drop-zone")
+        .forEach(zone=>{
+
+            zone.classList.remove("over");
+
+        });
+
+
+    if(!activeWord){
+
+        return;
+
+    }
+
+
+    const target =
+        findDropZone(
+            e.clientX,
+            e.clientY
+        );
+
+
+    if(target){
+
+        const draggedWord =
+            normalizeArabic(
+                activeWord.dataset.word
+            );
+
+
+        const correctWord =
+            normalizeArabic(
+                target.dataset.answer
+            );
+
+
+        /* =================================
+           CORRECT ANSWER
+           ================================= */
+
+        if(draggedWord === correctWord){
+
+            target.textContent =
+                activeWord.dataset.word;
+
+
+            target.classList.add(
+                "correct"
+            );
+
+
+            activeWord.classList.add(
+                "used"
+            );
+
+
+            score++;
+
+            updateScore();
+
+
+            if(score === pairs.length){
+
+                message.textContent =
+                    "🎉 مَاشَاءَ اللهُ! أَحْسَنْتُنَّ!";
+
+            }
+
+            else{
+
+                message.textContent =
+                    "✅ صَحِيحٌ!";
+
+
+                setTimeout(()=>{
+
+                    message.textContent = "";
+
+                },900);
+
+            }
+
+        }
+
+
+        /* =================================
+           WRONG ANSWER
+           ================================= */
+
+        else{
+
+            target.classList.add(
+                "wrong"
+            );
+
+
+            message.textContent =
+                "❌ حَاوِلْنَ مَرَّةً أُخْرَى";
+
+
+            setTimeout(()=>{
+
+                target.classList.remove(
+                    "wrong"
+                );
+
+                message.textContent = "";
+
+            },1300);
+
+        }
+
+    }
+
+
+    /* REMOVE GHOST */
+
+    if(ghost){
+
+        ghost.remove();
+
+        ghost = null;
+
+    }
+
+
+    activeWord = null;
+
+}
+
+
+/* =========================================
+   ATTACH DRAG EVENTS
+   ========================================= */
+
+function attachDragEvents(){
+
+    document
+        .querySelectorAll(".word")
+        .forEach(word=>{
+
+            word.addEventListener(
+                "pointerdown",
+                startDrag
+            );
+
+        });
+
+}
+
+
+/* =========================================
+   RESET BUTTON
+   ========================================= */
+
+resetButton.addEventListener(
+    "click",
+    createGame
+);
+
+
+/* =========================================
+   START GAME
+   ========================================= */
+
+createGame();
+
+</script>
+
+</body>
+  </html>
