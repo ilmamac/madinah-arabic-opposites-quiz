@@ -271,6 +271,31 @@ h1{
     font-weight:bold;
 }
 
+/* FLOWER CELEBRATION */
+.flower{
+    position:fixed;
+    top:-60px;
+    z-index:100000;
+    pointer-events:none;
+    font-size:28px;
+    will-change:transform,opacity;
+    animation:flowerFall 2.8s linear forwards;
+}
+
+@keyframes flowerFall{
+    0%{
+        transform:translate3d(0,-20px,0) rotate(0deg);
+        opacity:1;
+    }
+    70%{
+        opacity:1;
+    }
+    100%{
+        transform:translate3d(var(--drift),110vh,0) rotate(540deg);
+        opacity:0;
+    }
+}
+
 @media(max-width:650px){
 
     .row{
@@ -417,6 +442,8 @@ let activeWord = null;
 
 let ghost = null;
 
+let celebrated = false;
+
 
 /* =========================================
    ARABIC NORMALIZATION
@@ -465,6 +492,48 @@ function updateScore(){
 
 }
 
+/* FLOWER SHOWER */
+function celebrate(){
+
+    if(celebrated){
+        return;
+    }
+
+    celebrated = true;
+
+    const flowers = ["🌸","🌷","🌼","🌺","🌹","💮","🪻"];
+
+    for(let i = 0; i < 60; i++){
+
+        const flower = document.createElement("div");
+
+        flower.className = "flower";
+
+        flower.textContent =
+            flowers[Math.floor(Math.random() * flowers.length)];
+
+        flower.style.left =
+            Math.random() * 100 + "vw";
+
+        flower.style.fontSize =
+            (22 + Math.random() * 18) + "px";
+
+        flower.style.animationDelay =
+            (Math.random() * 1.2) + "s";
+
+        flower.style.setProperty(
+            "--drift",
+            ((Math.random() - 0.5) * 220) + "px"
+        );
+
+        document.body.appendChild(flower);
+
+        setTimeout(() => {
+            flower.remove();
+        }, 4300);
+    }
+}
+
 
 /* =========================================
    SHUFFLE ARRAY
@@ -493,7 +562,10 @@ function createGame(){
 
     wordBank.innerHTML = "";
 
+    document.querySelectorAll(".flower").forEach(flower => flower.remove());
+
     score = 0;
+    celebrated = false;
 
     updateScore();
 
@@ -864,6 +936,8 @@ function endDrag(e){
 
                 message.textContent =
                     "🎉 مَاشَاءَ اللهُ! أَحْسَنْتُنَّ!";
+
+                celebrate();
 
             }
 
