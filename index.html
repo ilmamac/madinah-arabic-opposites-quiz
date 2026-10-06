@@ -76,6 +76,14 @@ h1{
     padding:16px;
     border-radius:14px;
     box-shadow:0 3px 12px rgba(0,0,0,.08);
+
+    /* Only the questions scroll */
+    max-height:min(58vh, 580px);
+    overflow-y:auto;
+    overflow-x:hidden;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:thin;
 }
 
 /* EACH QUESTION ROW */
@@ -166,10 +174,26 @@ h1{
 
 /* OPPOSITE WORD BANK */
 
+.bank-section{
+    position:sticky;
+    bottom:0;
+    z-index:50;
+
+    margin-top:14px;
+    padding:12px 8px 10px;
+
+    background:rgba(255,255,255,.98);
+    border-top:2px solid #dfe5ef;
+    box-shadow:0 -5px 16px rgba(0,0,0,.10);
+
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+}
+
 .bank-title{
     font-size:21px;
     font-weight:bold;
-    margin:22px 0 10px;
+    margin:0 0 8px;
 }
 
 .word-bank{
@@ -177,7 +201,10 @@ h1{
     flex-wrap:wrap;
     justify-content:center;
     gap:10px;
-    padding:8px;
+    padding:4px;
+    max-height:22vh;
+    overflow-y:auto;
+    overscroll-behavior:contain;
 }
 
 .word{
@@ -260,6 +287,19 @@ h1{
     .instructions{
         font-size:18px;
     }
+
+    .match-area{
+        max-height:48vh;
+        padding:10px;
+    }
+
+    .bank-section{
+        padding:10px 4px 8px;
+    }
+
+    .word-bank{
+        max-height:26vh;
+    }
 }
 
 </style>
@@ -296,13 +336,13 @@ h1{
 <div class="match-area" id="matchArea">
 </div>
 
+<div class="bank-section">
+    <div class="bank-title">
+        الْأَضْدَادُ
+    </div>
 
-<div class="bank-title">
-الْأَضْدَادُ
-</div>
-
-
-<div class="word-bank" id="wordBank">
+    <div class="word-bank" id="wordBank">
+    </div>
 </div>
 
 
